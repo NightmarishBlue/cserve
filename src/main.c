@@ -10,7 +10,8 @@ int main(int argc, char* argv[])
 
     if (opts.help)
     {
-        printf(usagemsg);
+        printf("%s\n", usagemsg);
+        printopts(stdout);
         return 0;
     }
 

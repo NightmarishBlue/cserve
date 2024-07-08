@@ -32,3 +32,16 @@ int parseopts(struct cserveconf* opts, int argc, char* argv[])
     }
     return optind;
 }
+
+void printopts(FILE* file)
+{
+    for (size_t i = 0; i < optc; i++)
+    {
+        for (int j = 0; j < 2; j++) putc(' ', file);
+        putc('-', file);
+        putc(optlist[i].symb, file);
+        for (int j = 0; j < 4; j++) putc(' ', file);
+        fputs(optlist[i].help, file);
+        putc('\n', file);
+    }
+}
