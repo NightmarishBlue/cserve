@@ -16,6 +16,9 @@ make_out: $(OUT_DIR)
 test: build
 	./$(OUT_DIR)$(TARGET)
 
+debug: COMPILER_OPTS += -g
+debug: build
+
 $(OUT_DIR)$(TARGET): $(SRC_DIR)* | make_out
 	gcc "$(SRC_DIR)"* -I "$(INC_DIR)" -o "$(OUT_DIR)$(TARGET)" $(COMPILER_OPTS)
 
