@@ -1,4 +1,4 @@
-#include "args.h"
+#include "opts.h"
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -25,8 +25,20 @@ void eprintf(const char* format, ...)
 
 int main(int argc, char* argv[])
 {
-    struct cserveopts opts;
-    parseopts(&opts, 5, NULL);
+    struct cserveconf opts = { 0 };
+    int i = parseopts(&opts, argc, argv);
+
+    if (opts.help)
+    {
+        printf(usagemsg);
+        return 0;
+    }
+
+    if (argc - i != 1)
+    {
+        fprintf(stderr, "Error: no port given\n%s\n", usagemsg);
+        return 2;
+    }
     
     fd sock = socket(AF_INET, SOCK_STREAM, 0); // protocol 0 selects the default for the domain
     if (sock == -1)
