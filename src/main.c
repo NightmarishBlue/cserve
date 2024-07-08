@@ -1,3 +1,5 @@
+#include "args.h"
+
 #include <stdio.h>
 #include <stdarg.h>
 
@@ -21,8 +23,11 @@ void eprintf(const char* format, ...)
     va_end(args);
 }
 
-int main()
+int main(int argc, char* argv[])
 {
+    struct cserveopts opts;
+    parseopts(&opts, 5, NULL);
+    
     fd sock = socket(AF_INET, SOCK_STREAM, 0); // protocol 0 selects the default for the domain
     if (sock == -1)
         perror("error creating socket: ");
