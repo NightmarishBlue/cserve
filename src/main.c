@@ -8,7 +8,7 @@
 int main(int argc, char* argv[])
 {
     struct cserveconf opts = { 0 };
-    int i = parseopts(&opts, argc, argv);
+    int argindex = parseopts(&opts, argc, argv);
 
     if (opts.help)
     {
@@ -17,13 +17,18 @@ int main(int argc, char* argv[])
         return 0;
     }
 
-    if (argc - i != 1)
+    switch (argc - argindex)
     {
-        fprintf(stderr, "Error: no port given\n%s\n", usagemsg);
-        return 2;
+        case 0:
+            fprintf(stderr, "Error: no port given\n%s\n", usagemsg);
+            return 2;
+        case 1:
+            break;
+        default:
+            fprintf(stderr, "Warning: ignoring extraneous arguments\n");
     }
 
-    char* portstr = argv[i];
+    char* portstr = argv[argindex];
     for (size_t i = 0; portstr[i]; i++)
         if (!isdigit((unsigned char) portstr[i]))
         {
