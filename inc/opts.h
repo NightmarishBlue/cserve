@@ -21,5 +21,6 @@ extern const char usagemsg[];
 
 // parse the input arguments and configure the struct as accordingly
 int parseopts(struct cserveconf* opts, int argc, char* argv[]);
+// print all registered options in a block to file (mostly for -h)
 void printopts(FILE* file);
 #endif

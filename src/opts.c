@@ -8,6 +8,7 @@
 const char usagemsg[] = "Usage: cserve [-h] <port number>";
 
 // list of all options recognised by cserve
+// verbose, version, quiet, max connections, etc.
 const struct cserveopt optlist[] = { {'h', "Display this help message and exit"} };
 const size_t optc = sizeof(optlist) / sizeof(struct cserveopt);
 
