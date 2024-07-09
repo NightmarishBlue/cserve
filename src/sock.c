@@ -12,6 +12,7 @@ void eprintf(const char* format, ...)
 {
     va_list args;
     va_start(args, format);
+    fputs("Error: ", stderr); // would end up writing this 10 times otherwise
     vfprintf(stderr, format, args);
     perror("");
     va_end(args);
@@ -20,7 +21,7 @@ void eprintf(const char* format, ...)
 fd crtsock()
 {
     fd sock = socket(AF_INET, SOCK_STREAM, 0); // protocol 0 selects the default for the domain
-    if (sock == -1) eprintf("error creating socket: ");
+    if (sock == -1) eprintf("could not create socket for host: ");
     return sock;
 }
 
@@ -32,7 +33,7 @@ bool bindport(fd sock, struct sockaddr_in* addr, uint16_t port)
 
     bool ret = bind(sock, (struct sockaddr*) addr, sizeof(*addr)) != -1;
     if (!ret)
-        eprintf("error binding socket to port %d: ", port);
+        eprintf("could not bind socket to port %d: ", port);
     return ret;
 }
 
@@ -40,7 +41,7 @@ bool socklisten(fd sock)
 {
     bool ret = listen(sock, QUEUE_LEN) != -1;
     if (!ret)
-        eprintf("error marking socket passive: ");
+        eprintf("could not mark socket passive: ");
     return ret;
 }
 
