@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <ctype.h>
 
+#include <unistd.h>
+
 int main(int argc, char* argv[])
 {
     struct cserveconf opts = { 0 };
@@ -41,6 +43,16 @@ int main(int argc, char* argv[])
         }
     
     int portn = atoi(portstr);
-    servesock(portn);
+    struct sockaddr_in myaddr;
+
+    fd sockid = crtsock();
+    if (sockid == -1) return 1;
+    if (!(bindport(sockid, &myaddr, portn) && socklisten(sockid)))
+    {
+        close(sockid);
+        return 1;
+    }
+
+    close(sockid);
     return 0;
 }

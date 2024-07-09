@@ -1,12 +1,12 @@
+#include "sock.h"
+
 #include <stdio.h>
 #include <stdarg.h>
+#include <stdbool.h>
 
 #include <unistd.h>
 
 #include <sys/socket.h> // socket API
-#include <netinet/in.h> // internet socket stuff
-
-typedef int fd;
 
 void eprintf(const char* format, ...)
 {
@@ -17,36 +17,43 @@ void eprintf(const char* format, ...)
     va_end(args);
 }
 
-void servesock(uint16_t port)
+fd crtsock()
 {
     fd sock = socket(AF_INET, SOCK_STREAM, 0); // protocol 0 selects the default for the domain
-    if (sock == -1)
-        perror("error creating socket: ");
-
-    struct sockaddr_in my_addr;
-    my_addr.sin_family = AF_INET; // the domain we are using
-    my_addr.sin_port = htons(port); // the port we will listen on
-    my_addr.sin_addr.s_addr = INADDR_ANY; // the addresses we will allow to connect
-
-    struct sockaddr* addr_ptr = (struct sockaddr*) &my_addr;
-
-    if (bind(sock, addr_ptr, sizeof(my_addr)) == -1)
-        eprintf("error binding socket %d: ", port);
-    
-    if (listen(sock, 5) == -1)
-        perror("error marking socket passive: ");
-
-    {
-        socklen_t size = sizeof(my_addr);
-        fd conn = accept(sock, addr_ptr, &size);
-
-        if (conn == -1)
-            perror("error accepting connection: ");
-        
-        if (close(conn) == -1)
-            perror("error closing connection socket");
-    }
-
-    if (close(sock) == -1)
-        perror("error closing socket: ");
+    if (sock == -1) eprintf("error creating socket: ");
+    return sock;
 }
+
+bool bindport(fd sock, struct sockaddr_in* addr, uint16_t port)
+{
+    addr->sin_family = AF_INET; // the domain we are using
+    addr->sin_port = htons(port); // the port we will listen on
+    addr->sin_addr.s_addr = INADDR_ANY; // the addresses we will allow to connect
+
+    bool ret = bind(sock, (struct sockaddr*) addr, sizeof(*addr)) != -1;
+    if (!ret)
+        eprintf("error binding socket to port %d: ", port);
+    return ret;
+}
+
+bool socklisten(fd sock)
+{
+    bool ret = listen(sock, QUEUE_LEN) != -1;
+    if (!ret)
+        eprintf("error marking socket passive: ");
+    return ret;
+}
+
+    // {
+    //     socklen_t size = sizeof(sock);
+    //     fd conn = accept(sock, addr_ptr, &size);
+
+    //     if (conn == -1)
+    //         perror("error accepting connection: ");
+        
+    //     if (close(conn) == -1)
+    //         perror("error closing connection socket");
+    // }
+
+    // if (close(sock) == -1)
+    //     perror("error closing socket: ");
