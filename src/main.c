@@ -49,10 +49,23 @@ int main(int argc, char* argv[])
     if (sockid == -1) return 1;
     if (!(bindport(sockid, &myaddr, portn) && socklisten(sockid)))
     {
-        close(sockid);
+        closesock(sockid); // could report this error but 
         return 1;
     }
 
-    close(sockid);
+    while (true)
+    {
+        struct sockaddr_in clientaddr;
+        socklen_t addrsz = sizeof(clientaddr);
+        fd clisock = acceptconn(sockid, (struct sockaddr*) &clientaddr, &addrsz);
+        if (clisock == -1) continue;
+        char name[16];
+        if (addrstr(&clientaddr, 16, name))
+            printf("Received connection from %s\n", name);
+        closesock(clisock);
+        break;
+    }
+
+    closesock(sockid);
     return 0;
 }

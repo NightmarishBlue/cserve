@@ -1,15 +1,18 @@
 #include "sock.h"
 
 #include <stdio.h>
+#include <string.h>
 #include <stdarg.h>
 #include <stdbool.h>
 
 #include <unistd.h>
 
 #include <sys/socket.h> // socket API
+#include <arpa/inet.h> // get human-readable ip names
 
 void eprintf(const char* format, ...)
 {
+    // maybe quit if silent
     va_list args;
     va_start(args, format);
     fputs("Error: ", stderr); // would end up writing this 10 times otherwise
@@ -45,16 +48,35 @@ bool socklisten(fd sock)
     return ret;
 }
 
-    // {
-    //     socklen_t size = sizeof(sock);
-    //     fd conn = accept(sock, addr_ptr, &size);
+bool closesock(fd sock)
+{
+    bool ret = close(sock) == 0;
+    if (!ret)
+        eprintf("could not close file descriptor: ");
+    return ret;
+}
 
-    //     if (conn == -1)
-    //         perror("error accepting connection: ");
-        
-    //     if (close(conn) == -1)
-    //         perror("error closing connection socket");
-    // }
+fd acceptconn(fd sock, struct sockaddr* clientaddr, socklen_t* addrlen)
+{
+    fd conn = accept(sock, clientaddr, addrlen);
+    if (conn == -1)
+        eprintf("could not accept client: ");
+    return conn;
+}
 
-    // if (close(sock) == -1)
-    //     perror("error closing socket: ");
+bool ipstr(const struct in_addr* iaddr, size_t len, char str[len])
+{
+    const char* ptr = inet_ntop(AF_INET, iaddr, str, len);
+    if (ptr == NULL) // this throws an error if len isn't enough
+        eprintf("could not get IP string: ");
+    return ptr != NULL;
+}
+
+bool addrstr(const struct sockaddr_in* iaddr, size_t len, char str[])
+{
+    if (!ipstr(&iaddr->sin_addr, len, str)) return false;
+    size_t used = strnlen(str, len), size = len - used;
+    uint16_t portnum = ntohs(iaddr->sin_port);
+    int written = snprintf(str + used, len - used, ":%u", (unsigned int) portnum);
+    return !(written >= size || written < 0); // an error has happened
+}
