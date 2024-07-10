@@ -20,9 +20,13 @@ bool bindport(fd sock, struct sockaddr_in* addr, uint16_t port);
 bool socklisten(fd sock);
 // close a socket (only useful for the error output)
 bool closesock(fd sock);
+// accept a connection from an opened port and place its details into the sockaddr
+// return the fd for the new socket
 fd acceptconn(fd sock, struct sockaddr* clientaddr, socklen_t* addrlen);
+// place the IP of an internat address into a string of up to len chars
+// returning false on error
 bool ipstr(const struct in_addr* iaddr, size_t len, char str[len]);
-// with an internet address, place the string IP:PORT into str
+// with an internet address, place the string IP:PORT into str, up to the size limit
 // return true if successful
 bool addrstr(const struct sockaddr_in* iaddr, size_t size, char str[]);
 #endif
