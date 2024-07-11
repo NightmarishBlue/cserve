@@ -69,3 +69,15 @@ int main(int argc, char* argv[])
     closesock(sockid);
     return 0;
 }
+
+
+void eprintf(const char* format, ...)
+{
+    // maybe quit if silent
+    va_list args;
+    va_start(args, format);
+    fputs("Error: ", stderr); // would end up writing this 10 times otherwise
+    vfprintf(stderr, format, args);
+    perror("");
+    va_end(args);
+}

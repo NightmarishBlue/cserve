@@ -1,4 +1,5 @@
 #include "sock.h"
+#include "main.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -8,18 +9,8 @@
 #include <unistd.h>
 
 #include <sys/socket.h> // socket API
+#include <sys/time.h>
 #include <arpa/inet.h> // get human-readable ip names
-
-void eprintf(const char* format, ...)
-{
-    // maybe quit if silent
-    va_list args;
-    va_start(args, format);
-    fputs("Error: ", stderr); // would end up writing this 10 times otherwise
-    vfprintf(stderr, format, args);
-    perror("");
-    va_end(args);
-}
 
 fd crtsock()
 {
@@ -56,11 +47,25 @@ bool closesock(fd sock)
     return ret;
 }
 
+bool closepeer(fd sock)
+{
+    if (shutdown(sock, SHUT_WR) == -1)
+        eprintf("could not shutdown peer connection: ");
+    return closesock(sock);
+}
+
+const struct timeval timeout = { 5, 0 }; // 5s timeout
 fd acceptconn(fd sock, struct sockaddr* clientaddr, socklen_t* addrlen)
 {
     fd conn = accept(sock, clientaddr, addrlen);
     if (conn == -1)
-        eprintf("could not accept client: ");
+        eprintf("could not create socket for client: ");
+    // if (setsockopt(conn, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) != 0)
+    // {
+    //     eprintf("could not set timeout on client socket: ");
+    //     closesock(conn);
+    //     return -1;
+    // }
     return conn;
 }
 
@@ -79,4 +84,15 @@ bool addrstr(const struct sockaddr_in* iaddr, size_t len, char str[])
     uint16_t portnum = ntohs(iaddr->sin_port);
     int written = snprintf(str + used, len - used, ":%u", (unsigned int) portnum);
     return !(written >= size || written < 0); // an error has happened
+}
+
+ssize_t sockprintf(fd sock, const char* fmt, ...)
+{
+    char buff[512];
+    va_list args;
+    va_start(args, fmt);
+    int i = vsnprintf(buff, 512, fmt, args);
+    if (i < 0) return (ssize_t) i;
+    ssize_t s = write(sock, buff, i);
+    return s;
 }
