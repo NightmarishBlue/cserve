@@ -1,8 +1,12 @@
 #include "opts.h"
 #include "sock.h"
+#include "strio.h"
+#include "http.h"
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
+#include <string.h>
 #include <ctype.h>
 
 #include <unistd.h>
@@ -62,8 +66,8 @@ int main(int argc, char* argv[])
         char name[16];
         if (addrstr(&clientaddr, 16, name))
             printf("Received connection from %s\n", name);
-        closesock(clisock);
-        break;
+        serve(clisock);
+        closepeer(clisock);
     }
 
     closesock(sockid);
