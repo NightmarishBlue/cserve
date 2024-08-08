@@ -29,6 +29,8 @@ enum version
     V1_1,
 };
 
+#define DEFAULT_HTTP_VERSION V1_1 // the default version to assume when we can't determine the client's
+
 #define MAX_CODE_DESC_LEN 22 // array size needed to represent all code names
 // codes for the statuses, by name
 enum code
@@ -36,12 +38,12 @@ enum code
     OK = 200,
     BAD_REQUEST = 400,
     NOT_FOUND = 404,
-    LENGTH_REQUIRED = 411,
+    LENGTH_REQUIRED = 411, // the client didn't supply Content-Length
     PAYLOAD_TOO_LARGE = 413,
     URI_TOO_LONG = 414,
-    IM_A_TEAPOT = 418,
-    INTERNAL_SERVER_ERROR = 500,
-    NOT_IMPLEMENTED = 501,
+    IM_A_TEAPOT = 418, // things we should comply with but don't
+    INTERNAL_SERVER_ERROR = 500, // ¯\_(ツ)_/¯
+    NOT_IMPLEMENTED = 501, // things we don't have to comply with (and don't)
 };
 
 // struct representing the response type, like 200 OK

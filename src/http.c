@@ -126,41 +126,49 @@ void serve(fd sock)
     // reject invalid input - smallest method name is GET, 3 chars
     if (readuntilchar(sock, MAX_METHOD_LEN, mthdstr, ' ') < 3 || (req.method = methodfromstr(mthdstr)) == -1)
     {
-        printf("bad method '%s'\n", mthdstr);
-        sendstatus(sock, V1_1, BAD_REQUEST); // HACK dont like how it assumes 1.1
+        sendstatus(sock, DEFAULT_HTTP_VERSION, BAD_REQUEST); // HACK dont like how it assumes 1.1
         return;
     }
     else if (req.method > HEAD) // we only have the first 2 done @u@
     {
         fprintf(stderr, "oops... we don't have '%s' @u@\n", strfrommethod(req.method));
-        sendstatus(sock, V1_1, NOT_IMPLEMENTED);
+        sendstatus(sock, DEFAULT_HTTP_VERSION, NOT_IMPLEMENTED);
         return;
     }
 
-    sendstatus(sock, V1_1, OK);
+    // if the next character isn't a /, KILL
+    if (sgetc(sock, MSG_PEEK) != '/')
+    {
+        sendstatus(sock, DEFAULT_HTTP_VERSION, BAD_REQUEST); // HACK dont like how it assumes 1.1
+        return;
+    }
 
-    // pull out path - read until ' '
-    // save current location pointer
-    // char* path = &request.data[request.i];
-    // size_t pathsz = readbufcon(sock, &request, 128, &stopafterspace, NULL);
-    // reject if the last char is not space
-    // if (request.data[request.i - 1] != ' ')
-    // {
-    //     printf("bad path\n");
-    //     sendstatus(sock, V1_1, URI_TOO_LONG);
-    //     return;
-    // }
-    // could maybe copy this string somewhere? or put it somewhere else to begin with?
+    // extract the path
+    char path[256];
+    if (readuntilchar(sock, 256, path, ' ') == 256)
+    {
+        sendstatus(sock, DEFAULT_HTTP_VERSION, URI_TOO_LONG);
+        return;
+    }
 
-    // read 'HTTP/X.X'
-    // char* verstr = &request.data[request.i]; // 8 chars long
-    // enum version ver;
-    // if (readbuf(sock, &request, 8) != 8 || (ver = versionfromstr(verstr)) == -1)
-    // {
-    //     printf("bad version\n");
-    //     sendstatus(sock, V1_1, BAD_REQUEST);
-    //     return;
-    // }
+    // extract the version string
+    char verstr[MAX_VERSION_LEN];
+    readuntilchar(sock, MAX_VERSION_LEN, verstr, '\r');
+    if ((req.version = versionfromstr(verstr)) == -1)
+    {
+        sendstatus(sock, DEFAULT_HTTP_VERSION, BAD_REQUEST);
+        return;
+    }
+    // WE CAN NOW RETURN THE VERSION :)))
+    
+    // if the next character isn't a \n, KILL
+    if (sgetc(sock, 0) != '/')
+    {
+        sendstatus(sock, req.version, BAD_REQUEST); // HACK dont like how it assumes 1.1
+        return;
+    }
+
+    printf("%s %s HTTP/%s\n", strfrommethod(req.method), path, strfromversion(req.version));
 
     // check that it ends in a \r\n
     // if (readbuf(sock, &request, 2) != 2 || strncmp(&request.data[request.i - 3], "\r\n", 2) != 0)
@@ -183,7 +191,7 @@ void serve(fd sock)
     //     return;
     // }
 
-    // sendstatus(sock, ver, OK);
+    sendstatus(sock, req.version, OK);
 
     if (req.method == GET)
     {
