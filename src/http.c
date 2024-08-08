@@ -60,7 +60,7 @@ enum version versionfromstr(const char verstr[9])
 
 const char* strfromversion(enum version ver)
 {
-    if (ver < (enum version) 0 || ver > _1_1) return NULL;
+    if (ver < (enum version) 0 || ver > V1_1) return NULL;
     return verstrs[ver]; // HACK maybe do some error checking
 }
 
@@ -127,17 +127,17 @@ void serve(fd sock)
     if (readuntilchar(sock, MAX_METHOD_LEN, mthdstr, ' ') < 3 || (req.method = methodfromstr(mthdstr)) == -1)
     {
         printf("bad method '%s'\n", mthdstr);
-        sendstatus(sock, _1_1, BAD_REQUEST); // HACK dont like how it assumes 1.1
+        sendstatus(sock, V1_1, BAD_REQUEST); // HACK dont like how it assumes 1.1
         return;
     }
     else if (req.method > HEAD) // we only have the first 2 done @u@
     {
         fprintf(stderr, "oops... we don't have '%s' @u@\n", strfrommethod(req.method));
-        sendstatus(sock, _1_1, NOT_IMPLEMENTED);
+        sendstatus(sock, V1_1, NOT_IMPLEMENTED);
         return;
     }
 
-    sendstatus(sock, _1_1, OK);
+    sendstatus(sock, V1_1, OK);
 
     // pull out path - read until ' '
     // save current location pointer
@@ -147,7 +147,7 @@ void serve(fd sock)
     // if (request.data[request.i - 1] != ' ')
     // {
     //     printf("bad path\n");
-    //     sendstatus(sock, _1_1, URI_TOO_LONG);
+    //     sendstatus(sock, V1_1, URI_TOO_LONG);
     //     return;
     // }
     // could maybe copy this string somewhere? or put it somewhere else to begin with?
@@ -158,7 +158,7 @@ void serve(fd sock)
     // if (readbuf(sock, &request, 8) != 8 || (ver = versionfromstr(verstr)) == -1)
     // {
     //     printf("bad version\n");
-    //     sendstatus(sock, _1_1, BAD_REQUEST);
+    //     sendstatus(sock, V1_1, BAD_REQUEST);
     //     return;
     // }
 

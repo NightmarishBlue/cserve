@@ -24,8 +24,8 @@ enum method
 enum version
 {
     // _0_9, // no one will get mad if we don't support 0.9
-    _1_0,
-    _1_1,
+    V1_0,
+    V1_1,
 };
 
 #define MAX_CODE_LEN 22 // array size needed to represent all code names
@@ -40,7 +40,7 @@ enum code
     URI_TOO_LONG = 414,
     IM_A_TEAPOT = 418,
     INTERNAL_SERVER_ERROR = 500,
-    NOT_IMPLEMENTED = 501
+    NOT_IMPLEMENTED = 501,
 };
 
 // struct representing the response type, like 200 OK
