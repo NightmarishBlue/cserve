@@ -28,7 +28,7 @@ enum version
     V1_1,
 };
 
-#define MAX_CODE_LEN 22 // array size needed to represent all code names
+#define MAX_CODE_DESC_LEN 22 // array size needed to represent all code names
 // codes for the statuses, by name
 enum code
 {
@@ -46,7 +46,7 @@ enum code
 // struct representing the response type, like 200 OK
 struct status
 {
-    char desc[24];
+    char desc[MAX_CODE_DESC_LEN];
     enum code code;
 };
 
