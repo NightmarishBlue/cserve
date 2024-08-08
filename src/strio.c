@@ -42,9 +42,6 @@ size_t readbufcon(fd sock, struct buffer* buf, size_t n, bool (*callback)(struct
     return i;
 }
 
-// get one char from a socket
-// returns 0 if the socket is closed
-// returns -1 on error
 int sgetc(fd sock, int flags)
 {
     unsigned char c[1];
@@ -53,20 +50,31 @@ int sgetc(fd sock, int flags)
     return *c;
 }
 
-size_t readuntilchar(fd sock, size_t len, char buf[len], char illegal)
+size_t readuntilchar(fd sock, const size_t len, char buf[len], char illegal)
 {
-    if (len == 0) return 0; // safer to simply exit
-    // go up len - 1 times
-    for (size_t i = 0; i < len; i++)
+    if (len == 0) return 0; // safer to simply exit if len is 0
+    // go up len - 1 times - i sure hope GCC optimises this
+    for (size_t i = 0; i < len - 1; i++)
     {
         int c = sgetc(sock, 0);
-        if (c <= 0 || c == illegal)
+        if (c == illegal)
         {
             buf[i] = '\0';
             return i;
         }
+        if (c <= 0) // error or socket close
+        {
+            buf[i] = '\0';
+            return len;
+        }
         buf[i] = c;
     }
-    buf[--len] = '\0'; // terminate the string
-    return len;
+    buf[len - 1] = '\0'; // terminate the string
+    // peek at the next char and consume it if it's the breakchar
+    if (sgetc(sock, MSG_PEEK) == illegal)
+    {
+        (void) sgetc(sock, 0);
+        return len - 1; // also return the number of bytes consumed
+    }
+    return len; // return len on bad
 }
