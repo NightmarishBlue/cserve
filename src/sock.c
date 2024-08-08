@@ -88,7 +88,7 @@ bool addrstr(const struct sockaddr_in* iaddr, size_t len, char str[])
 
 ssize_t sockprintf(fd sock, const char* fmt, ...)
 {
-    char buff[512];
+    char buff[512]; // HACK a 512 limit is... not great.
     va_list args;
     va_start(args, fmt);
     int i = vsnprintf(buff, 512, fmt, args);
