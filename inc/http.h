@@ -21,6 +21,7 @@ enum method
     PATCH,
 };
 
+#define MAX_VERSION_LEN 9 // array size needed for "HTTP/X.X"
 enum version
 {
     // _0_9, // no one will get mad if we don't support 0.9
@@ -59,7 +60,7 @@ struct request
 
 // with a string of the form "HTTP/x.x" (9 chars), return its version
 // or -1 on invalid
-enum version versionfromstr(const char verstr[9]);
+enum version versionfromstr(const char verstr[MAX_VERSION_LEN]);
 
 bool stopafterstring(struct buffer* buf, void* _str);
 //stop after finding \r\n

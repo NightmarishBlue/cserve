@@ -45,7 +45,7 @@ const size_t statusc = size(statuses);
 const char verstrs[][4] = { "1.0", "1.1" };
 const size_t verc = size(verstrs);
 // from a string like HTTP/X.X, deduce version
-enum version versionfromstr(const char verstr[9])
+enum version versionfromstr(const char verstr[MAX_VERSION_LEN])
 {
     if (strncmp(verstr, "HTTP/", 5) != 0)
         return -1;
