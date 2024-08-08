@@ -93,6 +93,6 @@ ssize_t sockprintf(fd sock, const char* fmt, ...)
     va_start(args, fmt);
     int i = vsnprintf(buff, 512, fmt, args);
     if (i < 0) return (ssize_t) i;
-    ssize_t s = write(sock, buff, i);
+    ssize_t s = send(sock, buff, i, 0);
     return s;
 }
