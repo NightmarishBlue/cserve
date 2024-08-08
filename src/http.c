@@ -10,12 +10,12 @@
 #include <errno.h>
 
 const char mthdstrs[][MAX_METHOD_LEN] = { "GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE", "PATCH"};
-const size_t mthdc = sizeof(mthdstrs) / sizeof(mthdstrs[0]);
+const size_t mthdc = size(mthdstrs);
 enum method methodfromstr(const char* mthdstr)
 {
     for (int i = 0; i < mthdc; i++)
     {
-        if (strncmp(mthdstr, mthdstrs[i], sizeof(mthdstrs[0]) / sizeof(char)) == 0)
+        if (strncmp(mthdstr, mthdstrs[i], size(mthdstrs[0])) == 0)
             return (enum method) i;
     }
     return -1;
