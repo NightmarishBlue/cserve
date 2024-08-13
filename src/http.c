@@ -9,13 +9,13 @@
 #include <unistd.h>
 #include <errno.h>
 
-const char mthdstrs[][MAX_METHOD_LEN] = { "GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE", "PATCH"};
+const char* mthdstrs[] = { "GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE", "PATCH"};
 const size_t mthdc = size(mthdstrs);
 enum method methodfromstr(const char* mthdstr)
 {
     for (int i = 0; i < mthdc; i++)
     {
-        if (strncmp(mthdstr, mthdstrs[i], size(mthdstrs[0])) == 0)
+        if (strncmp(mthdstr, mthdstrs[i], 8) == 0) // biggest is CONNECT
             return (enum method) i;
     }
     return -1;
@@ -28,7 +28,6 @@ const char* strfrommethod(enum method mthd)
 }
 
 const struct status statuses[] = {
-  //{"..................... // this is the max size a message can currently be
     {"OK", OK},
     {"Bad Request", BAD_REQUEST},
     {"Not Found", NOT_FOUND},
@@ -42,7 +41,7 @@ const struct status statuses[] = {
 };
 const size_t statusc = size(statuses);
 
-const char verstrs[][4] = { "1.0", "1.1" };
+const char* verstrs[] = { "1.0", "1.1" };
 const size_t verc = size(verstrs);
 // from a string like HTTP/X.X, deduce version
 enum version versionfromstr(const char verstr[MAX_VERSION_LEN])
@@ -52,7 +51,7 @@ enum version versionfromstr(const char verstr[MAX_VERSION_LEN])
     verstr += 5; // shift up to the number
     for (int i = 0; i < verc; i++)
     {
-        if (strncmp(verstr, verstrs[i], size(verstrs[0])) == 0)
+        if (strncmp(verstr, verstrs[i], 4) == 0) // version string can be no larger than 4 chars
             return (enum version) i;
     }
     return -1;

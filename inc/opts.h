@@ -14,10 +14,10 @@ struct cserveconf
 struct cserveopt
 {
     char symb;
-    char help[48];
+    const char* help;
 };
 
-extern const char usagemsg[];
+extern const char* usagemsg;
 
 // parse the input arguments and configure the struct as accordingly
 int parseopts(struct cserveconf* opts, int argc, char* argv[]);

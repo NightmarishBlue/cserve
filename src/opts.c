@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <getopt.h>
 
-const char usagemsg[] = "Usage: cserve [-h] <port number>";
+const char* usagemsg = "Usage: cserve [-h] <port number>";
 
 // list of all options recognised by cserve
 // verbose, version, quiet, max connections, etc.

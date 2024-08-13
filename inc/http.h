@@ -31,7 +31,6 @@ enum version
 
 #define DEFAULT_HTTP_VERSION V1_1 // the default version to assume when we can't determine the client's
 
-#define MAX_CODE_DESC_LEN 22 // array size needed to represent all code names
 // codes for the statuses, by name
 enum code
 {
@@ -49,7 +48,7 @@ enum code
 // struct representing the response type, like 200 OK
 struct status
 {
-    char desc[MAX_CODE_DESC_LEN];
+    const char* desc;
     enum code code;
 };
 
