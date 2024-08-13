@@ -161,9 +161,9 @@ void serve(fd sock)
     // WE CAN NOW RETURN THE VERSION :)))
     
     // if the next character isn't a \n, KILL
-    if (sgetc(sock, 0) != '/')
+    if (sgetc(sock, MSG_PEEK) != '\n')
     {
-        sendstatus(sock, req.version, BAD_REQUEST); // HACK dont like how it assumes 1.1
+        sendstatus(sock, req.version, BAD_REQUEST);
         return;
     }
 
