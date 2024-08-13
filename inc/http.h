@@ -52,11 +52,12 @@ struct status
     enum code code;
 };
 
+#define MAX_REQ_PATH 256
 struct request
 {
     enum method method; // what method this request is
     enum version version; // the request's version
-    char* identifier; // the path to the file
+    char identifier[256]; // the path to the file
 };
 
 // with a string of the form "HTTP/x.x" (9 chars), return its version

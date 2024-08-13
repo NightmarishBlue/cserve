@@ -143,8 +143,8 @@ void serve(fd sock)
     }
 
     // extract the path
-    char path[256];
-    if (readuntilchar(sock, 256, path, ' ') == 256)
+    // char path[256];
+    if (readuntilchar(sock, MAX_REQ_PATH, req.identifier, ' ') == 256)
     {
         sendstatus(sock, DEFAULT_HTTP_VERSION, URI_TOO_LONG);
         return;
@@ -167,7 +167,7 @@ void serve(fd sock)
         return;
     }
 
-    printf("%s %s HTTP/%s\n", strfrommethod(req.method), path, strfromversion(req.version));
+    printf("%s %s HTTP/%s\n", strfrommethod(req.method), req.identifier, strfromversion(req.version));
 
     // check that it ends in a \r\n
     // if (readbuf(sock, &request, 2) != 2 || strncmp(&request.data[request.i - 3], "\r\n", 2) != 0)
