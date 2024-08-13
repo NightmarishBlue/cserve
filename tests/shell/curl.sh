@@ -2,7 +2,7 @@
 trap "trap - SIGTERM && kill -- -$$ &> /dev/null" SIGINT SIGTERM EXIT # ensure no orphans
 set +e
 PORT=6969
-echo "check that curl localhost:$PORT works..."
+echo "-- check that curl localhost:$PORT works..."
 
 curl "localhost:$PORT" &
 CURL_PID=$!
@@ -10,4 +10,4 @@ CURL_PID=$!
 CSERVE_PID=$!
 wait $CURL_PID
 kill $CSERVE_PID
-echo "test successful"
+echo "-- test passed"

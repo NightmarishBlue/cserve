@@ -14,7 +14,7 @@ build: $(OUT_DIR)$(TARGET)
 make_out: $(OUT_DIR)
 
 test: build
-	@EXE="./$(OUT_DIR)$(TARGET)" ./$(TST_DIR)*.sh
+	@EXE="./$(OUT_DIR)$(TARGET)" "./$(TST_DIR)/all.sh"
 
 debug: COMPILER_OPTS += -g
 debug: build
