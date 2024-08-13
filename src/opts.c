@@ -1,3 +1,4 @@
+#include "main.h"
 #include "opts.h"
 
 #include <stdio.h>
@@ -13,7 +14,7 @@ const struct cserveopt optlist[] = {
     {'h', "Display this help message and exit"},
     {'d', "Specify directory to serve"},
 };
-const size_t optc = sizeof(optlist) / sizeof(struct cserveopt);
+const size_t optc = size(optlist);
 
 int parseopts(struct cserveconf* opts, int argc, char* argv[])
 {
