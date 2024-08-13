@@ -40,6 +40,17 @@ const struct status statuses[] = {
     {"Not Implemented", NOT_IMPLEMENTED},
 };
 const size_t statusc = size(statuses);
+const struct status* statusfromcode(enum code code)
+{
+    for (int i = 0; i < statusc; i++)
+    {
+        const struct status* curr = &statuses[i];
+        if (curr->code == code)
+            return curr;
+    }
+    return NULL;
+}
+
 
 const char* verstrs[] = { "1.0", "1.1" };
 const size_t verc = size(verstrs);
@@ -91,111 +102,76 @@ bool stopafterspace(struct buffer* buf, void*_)
     return buf->data[buf->i - 1] != ' '; // continue if the last char isn't space
 }
 
-void sendstatus(fd sock, enum version ver, int code)
+void sendstatus(fd sock, enum version version, enum code code)
 {
-    for (int i = 0; i < statusc; i++)
-    {
-        const struct status* curr = &statuses[i];
-        if (curr->code == code)
-        {
-            sockprintf(sock, "HTTP/%s %d %s\r\n", strfromversion(ver), (int) curr->code, curr->desc);
-            return;
-        }
-    }
+    const struct status* status = statusfromcode(code);
+    const char* verstr = strfromversion(version);
+    if (status && verstr) // TODO maybe return an indicator, or send something in the case of error
+        sockprintf(sock, "HTTP/%s %d %s\r\n", strfromversion(version), (int) status->code, status->desc);
 }
 
-void serve(fd sock)
+// read the first line out of a socket and figure out if it's a valid request
+// return the code to respond with
+enum code parsereq(fd sock, struct request* request)
 {
-    /*
-        read first few bytes - ensure they are GET /
-            close on 400 if not
-        read up to ' ', up to limit of ~128
-            return 414 if a space hasn't been found
-            now we can obtain the path
-        read up to HTTP/, up to N bytes
-            return 400 if not
-        check version number
-            return 400 if bad
-        read up to \r\n - if we got here, this is PROBABLY a good request
-    */
-
-    struct request req;
-
-    char mthdstr[MAX_METHOD_LEN]; // longest method name is CONNECT, @7 chars
+    // read first few bytes - ensure they are GET /
+    char mthdstr[MAX_METHOD_LEN];
+    enum method mthd; // temporarily store the method
     // reject invalid input - smallest method name is GET, 3 chars
-    if (readuntilchar(sock, MAX_METHOD_LEN, mthdstr, ' ') < 3 || (req.method = methodfromstr(mthdstr)) == -1)
+    if (readuntilchar(sock, MAX_METHOD_LEN, mthdstr, ' ') < 3 || (mthd = methodfromstr(mthdstr)) == -1)
+        return BAD_REQUEST;
+    else if (mthd > HEAD) // we only have the first 2 done @u@
     {
-        sendstatus(sock, DEFAULT_HTTP_VERSION, BAD_REQUEST); // HACK dont like how it assumes 1.1
-        return;
+        fprintf(stderr, "oops... we don't have '%s' @u@\n", strfrommethod(request->method));
+        return NOT_IMPLEMENTED;
     }
-    else if (req.method > HEAD) // we only have the first 2 done @u@
-    {
-        fprintf(stderr, "oops... we don't have '%s' @u@\n", strfrommethod(req.method));
-        sendstatus(sock, DEFAULT_HTTP_VERSION, NOT_IMPLEMENTED);
-        return;
-    }
+    request->method = mthd;
 
     // if the next character isn't a /, KILL
     if (sgetc(sock, MSG_PEEK) != '/')
-    {
-        sendstatus(sock, DEFAULT_HTTP_VERSION, BAD_REQUEST); // HACK dont like how it assumes 1.1
-        return;
-    }
+        return BAD_REQUEST;
 
     // extract the path
-    // char path[256];
-    if (readuntilchar(sock, MAX_REQ_PATH, req.identifier, ' ') == 256)
-    {
-        sendstatus(sock, DEFAULT_HTTP_VERSION, URI_TOO_LONG);
-        return;
-    }
+    // read up to ' ', up to limit
+    if (readuntilchar(sock, MAX_REQ_PATH, request->identifier, ' ') == 256)
+        return URI_TOO_LONG;
 
     // extract the version string
     char verstr[MAX_VERSION_LEN];
     readuntilchar(sock, MAX_VERSION_LEN, verstr, '\r');
-    if ((req.version = versionfromstr(verstr)) == -1)
-    {
-        sendstatus(sock, DEFAULT_HTTP_VERSION, BAD_REQUEST);
-        return;
-    }
-    // WE CAN NOW RETURN THE VERSION :)))
+    enum version version = versionfromstr(verstr);
+    if (version == -1)
+        return BAD_REQUEST;
+    request->version = version;
     
     // if the next character isn't a \n, KILL
     if (sgetc(sock, MSG_PEEK) != '\n')
-    {
-        sendstatus(sock, req.version, BAD_REQUEST);
-        return;
-    }
+        return BAD_REQUEST;
 
+    return OK;
+}
+
+void serve(fd sock)
+{
+    struct request req = { .method = GET, .version = DEFAULT_HTTP_VERSION, .identifier = "" };
+    enum code rescd = parsereq(sock, &req);
+
+    // TODO parse headers somewhere about here
+    // also check if the final line is empty
     printf("%s %s HTTP/%s\n", strfrommethod(req.method), req.identifier, strfromversion(req.version));
-
-    // check that it ends in a \r\n
-    // if (readbuf(sock, &request, 2) != 2 || strncmp(&request.data[request.i - 3], "\r\n", 2) != 0)
-    // {
-    //     printf("bad req\n");
-    //     sendstatus(sock, ver, BAD_REQUEST);
-    //     return;
-    // }
-
-    // in future we can parse headers
-
-    // ok now we can mangle strings :)
-    // ok, now we can serve the file, if it's there
-    // path[pathsz] = '\0';
-    // FILE* f = fopen(path, "r");
-    // if (!f)
-    // {
-    //     eprintf("could not open file '%s'\n", path);
-    //     sendstatus(sock, ver, errno == ENOENT ? NOT_FOUND: INTERNAL_SERVER_ERROR);
-    //     return;
-    // }
+    if (rescd != OK) // send the error code
+    {
+        const struct status* stat = statusfromcode(rescd);
+        if (stat)
+            fprintf(stderr, "erroneous request: %s\n", stat->desc);
+        sendstatus(sock, req.version, rescd);
+        return; // TODO break the connection here
+    }
 
     sendstatus(sock, req.version, OK);
 
     if (req.method == GET)
     {
-        // send the file
+        // TODO send the file
     }
-
-    // fclose(f);
 }
