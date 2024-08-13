@@ -3,9 +3,9 @@ COMPILER_OPTS := -Wall -Wpedantic
 TARGET := cserve
 
 SRC_DIR := src/
-OUT_DIR := bin/
-
 INC_DIR := inc/
+OUT_DIR := bin/
+TST_DIR := tests/
 
 # build the program
 build: $(OUT_DIR)$(TARGET)
@@ -14,7 +14,7 @@ build: $(OUT_DIR)$(TARGET)
 make_out: $(OUT_DIR)
 
 test: build
-	./$(OUT_DIR)$(TARGET)
+	@EXE="./$(OUT_DIR)$(TARGET)" ./$(TST_DIR)*.sh
 
 debug: COMPILER_OPTS += -g
 debug: build
