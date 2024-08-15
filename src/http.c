@@ -102,12 +102,18 @@ bool stopafterspace(struct buffer* buf, void*_)
     return buf->data[buf->i - 1] != ' '; // continue if the last char isn't space
 }
 
-void sendstatus(fd sock, enum version version, enum code code)
+bool sendstatus(fd sock, enum version version, enum code code)
 {
     const struct status* status = statusfromcode(code);
     const char* verstr = strfromversion(version);
-    if (status && verstr) // TODO maybe return an indicator, or send something in the case of error
-        sockprintf(sock, "HTTP/%s %d %s\r\n", strfromversion(version), (int) status->code, status->desc);
+    bool success = status && verstr;
+    if (!verstr)
+        verstr = strfromversion(DEFAULT_HTTP_VERSION);
+    if (!status)
+        status = statusfromcode(INTERNAL_SERVER_ERROR);
+    if ((success = status && verstr))
+        success = sockprintf(sock, "HTTP/%s %d %s\r\n", verstr, (int) status->code, status->desc) > 0;
+    return success; // this is a lot of error checking I know
 }
 
 // read the first line out of a socket and figure out if it's a valid request

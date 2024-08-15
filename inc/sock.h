@@ -31,6 +31,7 @@ bool ipstr(const struct in_addr* iaddr, size_t len, char str[len]);
 // with an internet address, place the string IP:PORT into str, up to the size limit
 // return true if successful
 bool addrstr(const struct sockaddr_in* iaddr, size_t size, char str[]);
+
 // write into a socket with formatting
 ssize_t sockprintf(fd sock, const char* fmt, ...);
 #endif
