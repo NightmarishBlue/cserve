@@ -8,6 +8,7 @@
 
 #include <unistd.h>
 #include <fcntl.h>
+#include <errno.h>
 
 const char* mthdstrs[] = { "GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE", "PATCH"};
 const size_t mthdc = size(mthdstrs);
@@ -188,7 +189,17 @@ void serve(fd sock)
         if (file == -1)
         {
             eprintf("could not open file '%s': ", filename);
-            rescd = INTERNAL_SERVER_ERROR;
+            switch (errno)
+            {
+                case ENOENT:
+                    rescd = NOT_FOUND; break;
+                // case EACCES:
+                //     rescd = FORBIDDEN; break;
+                case ENAMETOOLONG:
+                    rescd = URI_TOO_LONG; break;
+                default:
+                    rescd = INTERNAL_SERVER_ERROR; break;
+            }
         }
     }
 
