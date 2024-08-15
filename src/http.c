@@ -71,7 +71,7 @@ enum version versionfromstr(const char verstr[MAX_VERSION_LEN])
 const char* strfromversion(enum version ver)
 {
     if (ver < (enum version) 0 || ver > V1_1) return NULL;
-    return verstrs[ver]; // HACK maybe do some error checking
+    return verstrs[ver];
 }
 
 // callback for readbufcon - returns false when buf ends in str
