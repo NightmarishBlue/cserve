@@ -9,6 +9,8 @@
 #include <unistd.h>
 
 #include <sys/socket.h> // socket API
+#include <sys/stat.h>
+#include <sys/sendfile.h> // faster, easier way to copy files
 #include <sys/time.h>
 #include <arpa/inet.h> // get human-readable ip names
 
@@ -95,4 +97,18 @@ ssize_t sockprintf(fd sock, const char* fmt, ...)
     if (i < 0) return (ssize_t) i;
     ssize_t s = send(sock, buff, i, 0);
     return s;
+}
+
+ssize_t transmitfile(fd sock, fd file)
+{
+    struct stat finfo;
+    if (fstat(file, &finfo) == -1)
+    {
+        eprintf("could not transmit file: ");
+        return -1;
+    }
+    ssize_t ret = sendfile(sock, file, NULL, finfo.st_size);
+    if (ret == -1)
+        eprintf("could not transmit file: ");
+    return -1;
 }

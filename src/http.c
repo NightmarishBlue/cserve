@@ -7,7 +7,7 @@
 #include <string.h>
 
 #include <unistd.h>
-#include <errno.h>
+#include <fcntl.h>
 
 const char* mthdstrs[] = { "GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE", "PATCH"};
 const size_t mthdc = size(mthdstrs);
@@ -174,10 +174,30 @@ void serve(fd sock)
         return; // TODO break the connection here
     }
 
-    sendstatus(sock, req.version, OK);
-
+    fd file;
     if (req.method == GET)
     {
-        // TODO send the file
+        char filename[1024]; // HACK hardcoded path, also just kinda generally needs to be fixed
+        // TODO add index.html stuff when req.identifier ends in /
+        if (snprintf(filename, 1024, "%s/%s", "./srv", req.identifier) >= 1024)
+        {
+            eprintf("filename '%s' too long: ", filename);
+            rescd = URI_TOO_LONG; // TODO check if specific errors exist for these cases
+        }
+        file = open(filename, O_RDONLY);
+        if (file == -1)
+        {
+            eprintf("could not open file '%s': ", filename);
+            rescd = INTERNAL_SERVER_ERROR;
+        }
+    }
+
+    sendstatus(sock, req.version, rescd);
+    send(sock, "\r\n", 2, 0);
+
+    if (req.method == GET && file != -1)
+    {
+        transmitfile(sock, file); // TODO check this return value and maybe break connection if we can't send more
+        close(file);
     }
 }
