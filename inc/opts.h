@@ -8,6 +8,8 @@
 struct cserveconf
 {
     bool help;
+    int portn;
+    const char* servedir;
 };
 
 // the representation of a single option
@@ -15,6 +17,7 @@ struct cserveopt
 {
     char symb;
     const char* help, *deflt;
+    bool takesarg;
 };
 
 extern const char* usagemsg;

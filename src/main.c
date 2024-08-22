@@ -7,13 +7,12 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
-#include <ctype.h>
 
 #include <unistd.h>
 
 int main(int argc, char* argv[])
 {
-    struct cserveconf opts = { 0 };
+    struct cserveconf opts = { .help = false, .portn = 80, .servedir = NULL };
     int argindex = parseopts(&opts, argc, argv);
 
     if (opts.help)
@@ -26,34 +25,21 @@ int main(int argc, char* argv[])
     switch (argc - argindex)
     {
         case 0:
-            fprintf(stderr, "Error: no port given\n%s\n", usagemsg);
+            fprintf(stderr, "Error: no root directory given\n%s\n", usagemsg);
             return 2;
         case 1:
             break;
         default:
             fprintf(stderr, "Warning: ignoring extraneous arguments\n");
     }
+    opts.servedir = argv[argindex]; // TODO stat this and ensure it exists
 
-    char* portstr = argv[argindex];
-    for (size_t i = 0; portstr[i]; i++)
-        if (!isdigit((unsigned char) portstr[i]))
-        {
-            fputs("Error: given port '", stderr); // 19 chars
-            i += 19; // we're breaking this loop anyway
-            fprintf(stderr, "%s' invalid\n", portstr);
-            for (size_t j = 0; j < i; j++) putc(' ', stderr);
-            fputs("^\n", stderr);
-            return 1;
-        }
-    
-    int portn = atoi(portstr);
     struct sockaddr_in myaddr;
-
     fd sockid = crtsock();
-    if (sockid == -1) return 1;
-    if (!(bindport(sockid, &myaddr, portn) && socklisten(sockid)))
+    if (sockid == -1) return 1; // TODO report this error
+    if(!(bindport(sockid, &myaddr, opts.portn) && socklisten(sockid)))
     {
-        closesock(sockid); // could report this error but 
+        closesock(sockid);
         return 1;
     }
 

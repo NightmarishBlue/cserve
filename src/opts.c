@@ -2,29 +2,40 @@
 #include "opts.h"
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
 
 #include <unistd.h>
 #include <getopt.h>
 
-const char* usagemsg = "Usage: cserve [-h] <port number>";
+const char* usagemsg = "Usage: cserve [-h] [-p <port number>] <root directory>";
 
 // list of all options recognised by cserve
 // verbose, version, quiet, max connections, etc.
 const struct cserveopt optlist[] = {
-    {'h', "Display this help message and exit", NULL},
-    {'p', "Specify the port to serve on", "80"},
-    {'d', "Specify directory to serve", NULL},
+    {'h', "Display this help message and exit", NULL, false},
+    {'p', "Specify the port to serve on", "80", true},
+    // {'d', "Specify directory to serve", NULL},
 };
 const size_t optc = size(optlist);
 
 int parseopts(struct cserveconf* opts, int argc, char* argv[])
 {
-    char valid[optc + 1];
+    size_t optstrsz = 0;
+    for (size_t i = 0; i < optc; i++)
+    {
+        optstrsz++;
+        if (optlist[i].takesarg)
+            optstrsz++;
+    }
+    char valid[optstrsz + 1];
     for (size_t i = 0; i < optc; i++)
     {
         valid[i] = optlist[i].symb;
+        if (optlist[i].takesarg)
+            valid[++i] = ':';
     }
-    valid[optc] = '\0';
+    valid[optstrsz] = '\0';
 
     int c;
     while ((c = getopt(argc, argv, valid)) != -1)
@@ -34,6 +45,24 @@ int parseopts(struct cserveconf* opts, int argc, char* argv[])
             case 'h':
                 opts->help = true;
                 break;
+            case 'p':
+            {
+                for (size_t i = 0; optarg[i]; i++)
+                {
+                    if (!isdigit((unsigned char) optarg[i]))
+                    {
+                        fputs("Error: given port '", stderr); // 19 chars
+                        i += 19;                              // we're breaking this loop anyway
+                        fprintf(stderr, "%s' invalid\n", optarg);
+                        for (size_t j = 0; j < i; j++)
+                            putc(' ', stderr);
+                        fputs("^\n", stderr);
+                        return 1;
+                    }
+                }
+                opts->portn = atoi(optarg);
+                break;
+            }
         }
     }
     return optind;
