@@ -14,7 +14,7 @@ struct cserveconf
 struct cserveopt
 {
     char symb;
-    const char* help;
+    const char* help, *deflt;
 };
 
 extern const char* usagemsg;

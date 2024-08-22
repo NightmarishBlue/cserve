@@ -11,8 +11,9 @@ const char* usagemsg = "Usage: cserve [-h] <port number>";
 // list of all options recognised by cserve
 // verbose, version, quiet, max connections, etc.
 const struct cserveopt optlist[] = {
-    {'h', "Display this help message and exit"},
-    {'d', "Specify directory to serve"},
+    {'h', "Display this help message and exit", NULL},
+    {'p', "Specify the port to serve on", "80"},
+    {'d', "Specify directory to serve", NULL},
 };
 const size_t optc = size(optlist);
 
@@ -42,11 +43,19 @@ void printopts(FILE* file)
 {
     for (size_t i = 0; i < optc; i++)
     {
-        for (int j = 0; j < 2; j++) putc(' ', file);
+        for (int j = 0; j < 2; j++)
+            putc(' ', file);
         putc('-', file);
         putc(optlist[i].symb, file);
-        for (int j = 0; j < 4; j++) putc(' ', file);
+        for (int j = 0; j < 4; j++)
+            putc(' ', file);
         fputs(optlist[i].help, file);
         putc('\n', file);
+        if (optlist[i].deflt)
+        {
+            for (int j = 0; j < 8; j++)
+                putc(' ', file);
+            fprintf(file, "Default: %s\n", optlist[i].deflt);
+        }
     }
 }
