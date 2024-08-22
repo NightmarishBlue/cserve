@@ -182,13 +182,13 @@ void serve(fd sock)
         // TODO add index.html stuff when req.identifier ends in /
         if (snprintf(filename, 1024, "%s/%s", "./srv", req.identifier) >= 1024)
         {
-            eprintf("filename '%s' too long: ", filename);
+            eprintf("filename '%s' too long", filename);
             rescd = URI_TOO_LONG; // TODO check if specific errors exist for these cases
         }
         file = open(filename, O_RDONLY);
         if (file == -1)
         {
-            eprintf("could not open file '%s': ", filename);
+            eprintf("could not open file '%s'", filename);
             switch (errno)
             {
                 case ENOENT:

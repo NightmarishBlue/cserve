@@ -8,7 +8,7 @@
 #include <stdarg.h>
 #include <string.h>
 
-#include <unistd.h>
+#include <errno.h>
 
 int main(int argc, char* argv[])
 {
@@ -48,6 +48,6 @@ void eprintf(const char* format, ...)
     va_start(args, format);
     fputs("Error: ", stderr); // would end up writing this 10 times otherwise
     vfprintf(stderr, format, args);
-    perror("");
     va_end(args);
+    fprintf(stderr, ": %s\n", strerror(errno));
 }

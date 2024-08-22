@@ -17,7 +17,7 @@
 fd crtsock()
 {
     fd sock = socket(AF_INET, SOCK_STREAM, 0); // protocol 0 selects the default for the domain
-    if (sock == -1) eprintf("could not create socket for host: ");
+    if (sock == -1) eprintf("could not create socket for host ");
     return sock;
 }
 
@@ -29,7 +29,7 @@ bool bindport(fd sock, struct sockaddr_in* addr, uint16_t port)
 
     bool ret = bind(sock, (struct sockaddr*) addr, sizeof(*addr)) != -1;
     if (!ret)
-        eprintf("could not bind socket to port %d: ", port);
+        eprintf("could not bind socket to port %d", port);
     return ret;
 }
 
@@ -37,7 +37,7 @@ bool socklisten(fd sock)
 {
     bool ret = listen(sock, QUEUE_LEN) != -1;
     if (!ret)
-        eprintf("could not mark socket passive: ");
+        eprintf("could not mark socket passive");
     return ret;
 }
 
@@ -45,14 +45,14 @@ bool closesock(fd sock)
 {
     bool ret = close(sock) == 0;
     if (!ret)
-        eprintf("could not close file descriptor: ");
+        eprintf("could not close file descriptor");
     return ret;
 }
 
 bool closepeer(fd sock)
 {
     if (shutdown(sock, SHUT_WR) == -1)
-        eprintf("could not shutdown peer connection: ");
+        eprintf("could not shutdown peer connection");
     return closesock(sock);
 }
 
@@ -61,7 +61,7 @@ fd acceptconn(fd sock, struct sockaddr* clientaddr, socklen_t* addrlen)
 {
     fd conn = accept(sock, clientaddr, addrlen);
     if (conn == -1)
-        eprintf("could not create socket for client: ");
+        eprintf("could not create socket for client");
     // if (setsockopt(conn, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) != 0)
     // {
     //     eprintf("could not set timeout on client socket: ");
@@ -75,7 +75,7 @@ bool ipstr(const struct in_addr* iaddr, size_t len, char str[len])
 {
     const char* ptr = inet_ntop(AF_INET, iaddr, str, len);
     if (ptr == NULL) // this throws an error if len isn't enough
-        eprintf("could not get IP string: ");
+        eprintf("could not get IP string");
     return ptr != NULL;
 }
 
@@ -104,11 +104,11 @@ ssize_t transmitfile(fd sock, fd file)
     struct stat finfo;
     if (fstat(file, &finfo) == -1)
     {
-        eprintf("could not transmit file: ");
+        eprintf("could not transmit file");
         return -1;
     }
     ssize_t ret = sendfile(sock, file, NULL, finfo.st_size);
     if (ret == -1)
-        eprintf("could not transmit file: ");
+        eprintf("could not transmit file");
     return -1;
 }
