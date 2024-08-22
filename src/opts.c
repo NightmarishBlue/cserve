@@ -9,6 +9,8 @@
 #include <getopt.h>
 
 const char* usagemsg = "Usage: cserve [-h] [-p <port number>] <root directory>";
+struct cserveconf config = {.help = false, .portn = 80, .servedir = NULL};
+const struct cserveconf* options = &config;
 
 // list of all options recognised by cserve
 // verbose, version, quiet, max connections, etc.
@@ -87,4 +89,28 @@ void printopts(FILE* file)
             fprintf(file, "Default: %s\n", optlist[i].deflt);
         }
     }
+}
+
+void configure(int argc, char* argv[])
+{
+    int argindex = parseopts(&config, argc, argv);
+
+    if (config.help)
+    {
+        printf("%s\n", usagemsg);
+        printopts(stdout);
+        exit(0);
+    }
+
+    switch (argc - argindex)
+    {
+        case 0:
+            fprintf(stderr, "Error: no root directory given\n%s\n", usagemsg);
+            exit(2);
+        case 1:
+            break;
+        default:
+            fprintf(stderr, "Warning: ignoring extraneous arguments\n");
+    }
+    config.servedir = argv[argindex]; // TODO stat this and ensure it exists
 }

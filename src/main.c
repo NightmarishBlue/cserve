@@ -12,32 +12,12 @@
 
 int main(int argc, char* argv[])
 {
-    struct cserveconf opts = { .help = false, .portn = 80, .servedir = NULL };
-    int argindex = parseopts(&opts, argc, argv);
-
-    if (opts.help)
-    {
-        printf("%s\n", usagemsg);
-        printopts(stdout);
-        return 0;
-    }
-
-    switch (argc - argindex)
-    {
-        case 0:
-            fprintf(stderr, "Error: no root directory given\n%s\n", usagemsg);
-            return 2;
-        case 1:
-            break;
-        default:
-            fprintf(stderr, "Warning: ignoring extraneous arguments\n");
-    }
-    opts.servedir = argv[argindex]; // TODO stat this and ensure it exists
+    configure(argc, argv); // will exit if unrecoverable invalid args are given
 
     struct sockaddr_in myaddr;
     fd sockid = crtsock();
     if (sockid == -1) return 1; // TODO report this error
-    if(!(bindport(sockid, &myaddr, opts.portn) && socklisten(sockid)))
+    if(!(bindport(sockid, &myaddr, options->portn) && socklisten(sockid)))
     {
         closesock(sockid);
         return 1;

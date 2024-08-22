@@ -21,9 +21,12 @@ struct cserveopt
 };
 
 extern const char* usagemsg;
+extern const struct cserveconf* options;
 
 // parse the input arguments and configure the struct as accordingly
 int parseopts(struct cserveconf* opts, int argc, char* argv[]);
 // print all registered options in a block to file (mostly for -h)
 void printopts(FILE* file);
+// parse the program's arguments and configure the global options object
+void configure(int argc, char* argv[]);
 #endif
