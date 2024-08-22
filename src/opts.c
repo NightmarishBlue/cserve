@@ -6,6 +6,7 @@
 #include <ctype.h>
 
 #include <unistd.h>
+#include <dirent.h>
 #include <getopt.h>
 
 const char* usagemsg = "Usage: cserve [-h] [-p <port number>] <root directory>";
@@ -112,5 +113,13 @@ void configure(int argc, char* argv[])
         default:
             fprintf(stderr, "Warning: ignoring extraneous arguments\n");
     }
-    config.servedir = argv[argindex]; // TODO stat this and ensure it exists
+
+    config.servedir = argv[argindex];
+    DIR* dir = opendir(config.servedir);
+    if (!dir)
+    {
+        eprintf("could not open dir '%s'", config.servedir);
+        exit(1);
+    }
+    closedir(dir);
 }
