@@ -88,15 +88,15 @@ bool addrstr(const struct sockaddr_in* iaddr, size_t len, char str[])
     return !(written >= size || written < 0); // an error has happened
 }
 
-ssize_t sockprintf(fd sock, const char* fmt, ...)
+// HACK this function has little reason to exist
+// [ ] decide whether to provide a stdc version without dprintf, or just delete it
+int sockprintf(fd sock, const char* fmt, ...)
 {
-    char buff[512]; // HACK a 512 limit is... not great.
     va_list args;
     va_start(args, fmt);
-    int i = vsnprintf(buff, 512, fmt, args);
-    if (i < 0) return (ssize_t) i;
-    ssize_t s = send(sock, buff, i, 0);
-    return s;
+    int i = vdprintf(sock, fmt, args);
+    va_end(args);
+    return i;
 }
 
 ssize_t transmitfile(fd sock, fd file)

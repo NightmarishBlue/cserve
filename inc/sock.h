@@ -33,7 +33,7 @@ bool ipstr(const struct in_addr* iaddr, size_t len, char str[len]);
 bool addrstr(const struct sockaddr_in* iaddr, size_t size, char str[]);
 
 // write into a socket with formatting
-ssize_t sockprintf(fd sock, const char* fmt, ...);
+int sockprintf(fd sock, const char* fmt, ...);
 
 // send an opened readable file to a socket
 // return the number of bytes read, or -1 on an error
