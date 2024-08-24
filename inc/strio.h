@@ -10,6 +10,7 @@
 
 #define BUFF_SIZE 512
 
+// TODO when we implement POST, evaluate whether this is useful for reading request body. if not, nuke it.
 // is this actually good enough?
 // buffers that can be retried could be better.
 struct buffer
