@@ -1,5 +1,6 @@
 #ifndef _SOCK_H
 #define _SOCK_H
+#include "fileio.h"
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -7,8 +8,6 @@
 #include <netinet/in.h> // internet socket stuff
 
 #define QUEUE_LEN 5 // how many connection requests to keep queued before we deal with them
-
-typedef int fd;
 
 // these functions print diagnostic error messages
 
@@ -35,7 +34,7 @@ bool addrstr(const struct sockaddr_in* iaddr, size_t size, char str[]);
 // write into a socket with formatting
 int sockprintf(fd sock, const char* fmt, ...);
 
-// send an opened readable file to a socket
+// send n bytes of an opened, readable file to a socket
 // return the number of bytes read, or -1 on an error
-ssize_t transmitfile(fd sock, fd file);
+ssize_t transmitfile(fd sock, fd file, size_t n);
 #endif
