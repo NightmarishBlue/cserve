@@ -1,5 +1,6 @@
 #include "http.h"
 #include "main.h"
+#include "opts.h"
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -175,16 +176,36 @@ void serve(fd sock)
         return; // TODO break the connection here
     }
 
-    fd file;
+    fd file = -1; // file to serve
     if (req.method == GET)
     {
-        char filename[1024]; // HACK hardcoded path, also just kinda generally needs to be fixed
-        // TODO add index.html stuff when req.identifier ends in /
-        if (snprintf(filename, 1024, "%s/%s", "./srv", req.identifier) >= 1024)
+        bool index = req.identifier[strnlen(req.identifier, 256) - 1] == '/';
+        int size;
+        if (index)
+            size = snprintf(NULL, 0, "%s/%s%s", options->servedir, req.identifier, "index.html");
+        else
+            size = snprintf(NULL, 0, "%s/%s", options->servedir, req.identifier);
+
+        if (size < 0)
         {
-            eprintf("filename '%s' too long", filename);
-            rescd = URI_TOO_LONG; // TODO check if specific errors exist for these cases
+            fprintf(stderr, "snprintf failure\n");
+            rescd = INTERNAL_SERVER_ERROR;
+            goto respond;
         }
+
+        char filename[size + 1];
+        if (index)
+            size = snprintf(filename, size + 1, "%s/%s%s", options->servedir, req.identifier, "index.html");
+        else
+            size = snprintf(filename, size + 1, "%s/%s", options->servedir, req.identifier);
+
+        if (size < 0)
+        {
+            fprintf(stderr, "snprintf failure\n");
+            rescd = INTERNAL_SERVER_ERROR;
+            goto respond;
+        }
+
         file = open(filename, O_RDONLY);
         if (file == -1)
         {
@@ -203,6 +224,7 @@ void serve(fd sock)
         }
     }
 
+respond:
     sendstatus(sock, req.version, rescd);
     send(sock, "\r\n", 2, 0);
 
