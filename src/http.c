@@ -1,6 +1,7 @@
 #include "http.h"
 #include "main.h"
 #include "opts.h"
+#include "fileio.h"
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -177,6 +178,7 @@ void serve(fd sock)
     }
 
     fd file = -1; // file to serve
+    off_t fsize = -1; // size of said file (mandated for Content-Length)
     if (req.method == GET)
     {
         bool index = req.identifier[strnlen(req.identifier, 256) - 1] == '/';
@@ -222,15 +224,28 @@ void serve(fd sock)
                     rescd = INTERNAL_SERVER_ERROR; break;
             }
         }
+        else
+        {
+            fsize = filesize(file);
+            if (fsize == -1)
+                rescd = INTERNAL_SERVER_ERROR;
+        }
     }
 
 respond:
     sendstatus(sock, req.version, rescd);
-    send(sock, "\r\n", 2, 0);
 
-    if (req.method == GET && file != -1)
+    if (req.method == GET && fsize > 0) // no need to check file, fsize tells us if it's open
     {
-        transmitfile(sock, file); // TODO check this return value and maybe break connection if we can't send more
-        close(file);
+        sockprintf(sock, "Content-Length: %ld\r\n", fsize);
+        send(sock, "\r\n", 2, 0);
+        transmitfile(sock, file, fsize); // TODO check this return value and maybe break connection if we can't send more
     }
+    else
+    {
+        send(sock, "\r\n", 2, 0);
+    }
+
+    if (file != -1)
+        close(file);
 }
