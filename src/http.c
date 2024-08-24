@@ -160,6 +160,7 @@ enum code parsereq(fd sock, struct request* request)
     return OK;
 }
 
+// TODO return a bool or something indicating whether to continue serving this connection
 void serve(fd sock)
 {
     struct request req = { .method = GET, .version = DEFAULT_HTTP_VERSION, .identifier = "" };
@@ -177,6 +178,7 @@ void serve(fd sock)
         return; // TODO break the connection here
     }
 
+    // TODO abstract into a 'findfile' function
     fd file = -1; // file to serve
     off_t fsize = -1; // size of said file (mandated for Content-Length)
     if (req.method == GET)
@@ -229,6 +231,7 @@ void serve(fd sock)
             fsize = filesize(file);
             if (fsize == -1)
                 rescd = INTERNAL_SERVER_ERROR;
+            // HACK should ensure that this file is not outside the directory we are serving
         }
     }
 
@@ -239,7 +242,7 @@ respond:
     {
         sockprintf(sock, "Content-Length: %ld\r\n", fsize);
         send(sock, "\r\n", 2, 0);
-        transmitfile(sock, file, fsize); // TODO check this return value and maybe break connection if we can't send more
+        transmitfile(sock, file, fsize); // TODO check return value and break connection if bad
     }
     else
     {
