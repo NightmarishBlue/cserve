@@ -34,6 +34,7 @@ const char* strfrommethod(enum method mthd)
 const struct status statuses[] = {
     {"OK", OK},
     {"Bad Request", BAD_REQUEST},
+    {"Forbidden", FORBIDDEN},
     {"Not Found", NOT_FOUND},
     {"Length Required", LENGTH_REQUIRED},
     // things for our implementation limits

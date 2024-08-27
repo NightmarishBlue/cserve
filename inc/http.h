@@ -36,6 +36,7 @@ enum code
 {
     OK = 200,
     BAD_REQUEST = 400,
+    FORBIDDEN = 403,
     NOT_FOUND = 404,
     LENGTH_REQUIRED = 411, // the client didn't supply Content-Length
     PAYLOAD_TOO_LARGE = 413,
