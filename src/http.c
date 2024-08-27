@@ -1,7 +1,6 @@
 #include "http.h"
 #include "main.h"
 #include "opts.h"
-#include "fileio.h"
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -75,34 +74,6 @@ const char* strfromversion(enum version ver)
 {
     if (ver < (enum version) 0 || ver > V1_1) return NULL;
     return verstrs[ver];
-}
-
-// callback for readbufcon - returns false when buf ends in str
-bool stopafterstring(struct buffer* buf, void* _str)
-{
-    const char* str = (const char*) _str;
-    size_t slen = strnlen(str, BUFF_SIZE); // can't go further than buff size anyway so dont do it
-    if (buf->i < slen) return true; // can't compare if there aren't even enough chars
-    return strncmp(&buf->data[buf->i - slen], str, slen) != 0;
-}
-
-bool stopafterchar(struct buffer* buf, void* _c)
-{
-    char c = *(char*) _c;
-    if (buf->i == 0) return true; // if there is no char, continue
-    return buf->data[buf->i - 1] == c;
-}
-
-bool stopafterline(struct buffer* buf, void*_)
-{
-    if (buf->i < 2) return true;
-    return strncmp(&buf->data[buf->i - 2], "\r\n", 2) != 0;
-}
-
-bool stopafterspace(struct buffer* buf, void*_)
-{
-    if (buf->i == 0) return true; // if there is no char, continue
-    return buf->data[buf->i - 1] != ' '; // continue if the last char isn't space
 }
 
 bool sendstatus(fd sock, enum version version, enum code code)

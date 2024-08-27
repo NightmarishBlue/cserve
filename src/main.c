@@ -1,6 +1,5 @@
 #include "opts.h"
 #include "sock.h"
-#include "strio.h"
 #include "http.h"
 
 #include <stdio.h>
