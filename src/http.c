@@ -103,7 +103,7 @@ enum code parsereq(fd sock, struct request* request)
     // reject invalid input - smallest method name is GET, 3 chars
     if (readuntilchar(sock, MAX_METHOD_LEN, mthdstr, ' ') < 3 || (mthd = methodfromstr(mthdstr)) == -1)
         return BAD_REQUEST;
-    else if (mthd > HEAD) // we only have the first 2 done @u@
+    else if (mthd > GET) // we only have the first one done @u@
     {
         fprintf(stderr, "oops... we don't have '%s' @u@\n", strfrommethod(request->method));
         return NOT_IMPLEMENTED;
@@ -200,7 +200,7 @@ void serve(fd sock)
     off_t fsize = getfile(&req, &res);
     sendstatus(sock, req.version, res.code);
 
-    if (req.method == GET && fsize > 0) // no need to check file, fsize tells us if it's open
+    if (fsize > 0) // no need to check file, fsize tells us if it's open
     {
         sockprintf(sock, "Content-Length: %ld\r\n", fsize);
         send(sock, "\r\n", 2, 0);
