@@ -60,6 +60,12 @@ struct request
     char identifier[256]; // the path to the file
 };
 
+struct response
+{
+    enum code code;
+    fd file; // handle of the file to serve
+};
+
 // with a string of the form "HTTP/x.x" (9 chars), return its version
 // or -1 on invalid
 enum version versionfromstr(const char verstr[MAX_VERSION_LEN]);
