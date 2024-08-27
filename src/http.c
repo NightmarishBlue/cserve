@@ -134,83 +134,83 @@ enum code parsereq(fd sock, struct request* request)
     return OK;
 }
 
+// open the file identified by a request, and store the resultant handle and response code in res
+// return the size of the file in bytes, or -1 if an error occurred
+off_t getfile(struct request* req, struct response* res)
+{
+    bool index = req->identifier[strnlen(req->identifier, 256) - 1] == '/';
+    char* filepath;
+    if (index)
+        filepath = msprintf("%s/%s%s", options->servedir, req->identifier, "index.html");
+    else
+        filepath = msprintf("%s/%s", options->servedir, req->identifier);
+
+    if (!filepath)
+    {
+        fprintf(stderr, "error sprintfing the path\n");
+        return -1;
+    }
+
+    res->file = open(filepath, O_RDONLY);
+    // the filepath is technically unneeded here
+    if (res->file == -1)
+    {
+        eprintf("could not open file '%s'", filepath);
+        free(filepath);
+        switch (errno)
+        {
+        case ENOENT:
+            res->code = NOT_FOUND; break;
+        case EACCES:
+            res->code = FORBIDDEN; break;
+        case ENAMETOOLONG:
+            res->code = URI_TOO_LONG; break;
+        default:
+            res->code = INTERNAL_SERVER_ERROR; break;
+        }
+        return -1;
+    }
+    free(filepath);
+    off_t size = filesize(res->file);
+    if (size == -1)
+        res->code = INTERNAL_SERVER_ERROR;
+    // HACK should ensure that this file is not outside the directory we are serving
+    return size; // i think it would be cleaner if this returned a response struct :/
+}
+
 // TODO return a bool or something indicating whether to continue serving this connection
 void serve(fd sock)
 {
     struct request req = { .method = GET, .version = DEFAULT_HTTP_VERSION, .identifier = "" };
-    enum code rescd = parsereq(sock, &req);
+    struct response res;
+    res.code = parsereq(sock, &req);
 
     // TODO parse headers somewhere about here
     // also check if the final line is empty
     printf("%s %s HTTP/%s\n", strfrommethod(req.method), req.identifier, strfromversion(req.version));
-    if (rescd != OK) // send the error code
+    if (res.code != OK)
     {
-        const struct status* stat = statusfromcode(rescd);
+        const struct status* stat = statusfromcode(res.code);
         if (stat)
             fprintf(stderr, "erroneous request: %s\n", stat->desc);
-        sendstatus(sock, req.version, rescd);
+        sendstatus(sock, req.version, res.code);
         return; // TODO break the connection here
     }
 
-    // TODO abstract into a 'findfile' function
-    fd file = -1; // file to serve
-    off_t fsize = -1; // size of said file (mandated for Content-Length)
-    if (req.method == GET)
-    {
-        bool index = req.identifier[strnlen(req.identifier, 256) - 1] == '/';
-        char* filepath = NULL;
-        if (index)
-            filepath = msprintf("%s/%s%s", options->servedir, req.identifier, "index.html");
-        else
-            filepath = msprintf("%s/%s", options->servedir, req.identifier);
-
-        if (!filepath)
-        {
-            fprintf(stderr, "error sprintfing the path\n");
-            rescd = INTERNAL_SERVER_ERROR;
-            goto respond;
-        }
-
-        file = open(filepath, O_RDONLY);
-        if (file == -1)
-        {
-            eprintf("could not open file '%s'", filepath);
-            switch (errno)
-            {
-                case ENOENT:
-                    rescd = NOT_FOUND; break;
-                // case EACCES:
-                //     rescd = FORBIDDEN; break;
-                case ENAMETOOLONG:
-                    rescd = URI_TOO_LONG; break;
-                default:
-                    rescd = INTERNAL_SERVER_ERROR; break;
-            }
-        }
-        else
-        {
-            fsize = filesize(file);
-            if (fsize == -1)
-                rescd = INTERNAL_SERVER_ERROR;
-            // HACK should ensure that this file is not outside the directory we are serving
-        }
-        free(filepath);
-    }
-
-respond:
-    sendstatus(sock, req.version, rescd);
+    off_t fsize = getfile(&req, &res);
+    sendstatus(sock, req.version, res.code);
 
     if (req.method == GET && fsize > 0) // no need to check file, fsize tells us if it's open
     {
         sockprintf(sock, "Content-Length: %ld\r\n", fsize);
         send(sock, "\r\n", 2, 0);
-        transmitfile(sock, file, fsize); // TODO check return value and break connection if bad
+        transmitfile(sock, res.file, fsize); // TODO check return value and break connection if bad
     }
     else
     {
         send(sock, "\r\n", 2, 0);
     }
 
-    if (file != -1)
-        close(file);
+    if (res.file != -1)
+        close(res.file);
 }
