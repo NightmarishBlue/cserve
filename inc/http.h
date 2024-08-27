@@ -2,7 +2,7 @@
 #ifndef _HTTP_H
 #define _HTTP_H
 
-#include "strio.h"
+#include "sock.h"
 
 #include <stdbool.h>
 
@@ -64,8 +64,5 @@ struct request
 // or -1 on invalid
 enum version versionfromstr(const char verstr[MAX_VERSION_LEN]);
 
-bool stopafterstring(struct buffer* buf, void* _str);
-//stop after finding \r\n
-bool stopafterline(struct buffer* buf, void*_);
 void serve(fd sock);
 #endif
