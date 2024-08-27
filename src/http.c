@@ -1,8 +1,10 @@
 #include "http.h"
 #include "main.h"
 #include "opts.h"
+#include "str.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdarg.h>
 
 #include <string.h>
@@ -155,36 +157,23 @@ void serve(fd sock)
     if (req.method == GET)
     {
         bool index = req.identifier[strnlen(req.identifier, 256) - 1] == '/';
-        int size;
+        char* filepath = NULL;
         if (index)
-            size = snprintf(NULL, 0, "%s/%s%s", options->servedir, req.identifier, "index.html");
+            filepath = msprintf("%s/%s%s", options->servedir, req.identifier, "index.html");
         else
-            size = snprintf(NULL, 0, "%s/%s", options->servedir, req.identifier);
+            filepath = msprintf("%s/%s", options->servedir, req.identifier);
 
-        if (size < 0)
+        if (!filepath)
         {
-            fprintf(stderr, "snprintf failure\n");
+            fprintf(stderr, "error sprintfing the path\n");
             rescd = INTERNAL_SERVER_ERROR;
             goto respond;
         }
 
-        char filename[size + 1];
-        if (index)
-            size = snprintf(filename, size + 1, "%s/%s%s", options->servedir, req.identifier, "index.html");
-        else
-            size = snprintf(filename, size + 1, "%s/%s", options->servedir, req.identifier);
-
-        if (size < 0)
-        {
-            fprintf(stderr, "snprintf failure\n");
-            rescd = INTERNAL_SERVER_ERROR;
-            goto respond;
-        }
-
-        file = open(filename, O_RDONLY);
+        file = open(filepath, O_RDONLY);
         if (file == -1)
         {
-            eprintf("could not open file '%s'", filename);
+            eprintf("could not open file '%s'", filepath);
             switch (errno)
             {
                 case ENOENT:
@@ -204,6 +193,7 @@ void serve(fd sock)
                 rescd = INTERNAL_SERVER_ERROR;
             // HACK should ensure that this file is not outside the directory we are serving
         }
+        free(filepath);
     }
 
 respond:
