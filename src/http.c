@@ -94,7 +94,8 @@ bool sendstatus(fd sock, enum version version, enum code code)
 }
 
 // read the first line out of a socket and figure out if it's a valid request
-// return the code to respond with
+// populate the request object with its version and file identifier
+// return the code to respond with (will be 4xx if bad)
 enum code parsereq(fd sock, struct request* request)
 {
     // read first few bytes - ensure they are GET /
@@ -139,24 +140,26 @@ enum code parsereq(fd sock, struct request* request)
 off_t getfile(struct request* req, struct response* res)
 {
     bool index = req->identifier[strnlen(req->identifier, 256) - 1] == '/';
-    char* filepath;
+    char* filepath; // if index is needed, this will be on heap
     if (index)
-        filepath = msprintf("%s/%s%s", options->srvdirpath, req->identifier, "index.html");
-    else
-        filepath = msprintf("%s/%s", options->srvdirpath, req->identifier);
-
-    if (!filepath)
     {
-        fprintf(stderr, "error sprintfing the path\n");
-        return -1;
+        filepath = msprintf("%s%s", req->identifier + 1, "index.html"); // have to skip the leading / for openat
+        if (!filepath)
+        {
+            fprintf(stderr, "error sprintfing the path\n");
+            return -1;
+        }
     }
+    else
+        filepath = req->identifier + 1; //msprintf("%s/%s", options->srvdirpath, req->identifier);
 
-    res->file = open(filepath, O_RDONLY);
+    res->file = openat(options->srvdir, filepath, O_RDONLY);
     // the filepath is technically unneeded here
     if (res->file == -1)
     {
         eprintf("could not open file '%s'", filepath);
-        free(filepath);
+        if (index)
+            free(filepath);
         switch (errno)
         {
         case ENOENT:
@@ -170,7 +173,10 @@ off_t getfile(struct request* req, struct response* res)
         }
         return -1;
     }
-    free(filepath);
+
+    if (index)
+        free(filepath);
+
     off_t size = filesize(res->file);
     if (size == -1)
         res->code = INTERNAL_SERVER_ERROR;
