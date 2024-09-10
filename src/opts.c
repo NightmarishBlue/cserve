@@ -10,7 +10,7 @@
 #include <getopt.h>
 
 const char* usagemsg = "Usage: cserve [-h] [-p <port number>] <root directory>";
-struct cserveconf config = {.help = false, .portn = 80, .servedir = NULL};
+struct cserveconf config = {.help = false, .portn = 80, .srvdirpath = NULL};
 const struct cserveconf* options = &config;
 
 // list of all options recognised by cserve
@@ -114,11 +114,11 @@ void configure(int argc, char* argv[])
             fprintf(stderr, "Warning: ignoring extraneous arguments\n");
     }
 
-    config.servedir = argv[argindex];
-    DIR* dir = opendir(config.servedir);
+    config.srvdirpath = argv[argindex];
+    DIR* dir = opendir(config.srvdirpath);
     if (!dir)
     {
-        eprintf("could not open dir '%s'", config.servedir);
+        eprintf("could not open dir '%s'", config.srvdirpath);
         exit(1);
     }
     closedir(dir);

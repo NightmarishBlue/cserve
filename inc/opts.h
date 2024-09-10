@@ -1,5 +1,6 @@
 #ifndef _OPTS_H
 #define _OPTS_H
+#include "fileio.h"
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -9,7 +10,8 @@ struct cserveconf
 {
     bool help;
     int portn;
-    const char* servedir;
+    const char* srvdirpath;
+    fd srvdir;
 };
 
 // the representation of a single option

@@ -141,9 +141,9 @@ off_t getfile(struct request* req, struct response* res)
     bool index = req->identifier[strnlen(req->identifier, 256) - 1] == '/';
     char* filepath;
     if (index)
-        filepath = msprintf("%s/%s%s", options->servedir, req->identifier, "index.html");
+        filepath = msprintf("%s/%s%s", options->srvdirpath, req->identifier, "index.html");
     else
-        filepath = msprintf("%s/%s", options->servedir, req->identifier);
+        filepath = msprintf("%s/%s", options->srvdirpath, req->identifier);
 
     if (!filepath)
     {
