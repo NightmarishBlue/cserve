@@ -1,4 +1,5 @@
 #include "main.h"
+#include "fileio.h"
 #include "opts.h"
 
 #include <stdio.h>
@@ -115,8 +116,7 @@ void configure(int argc, char* argv[])
     }
 
     config.srvdirpath = argv[argindex];
-    config.srvdir = open(config.srvdirpath, O_RDONLY | O_DIRECTORY);
-    // not portable
+    config.srvdir = opend(config.srvdirpath);
     if (config.srvdir == -1)
     {
         eprintf("could not open dir '%s'", config.srvdirpath);
