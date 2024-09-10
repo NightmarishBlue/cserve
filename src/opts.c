@@ -6,7 +6,7 @@
 #include <ctype.h>
 
 #include <unistd.h>
-#include <dirent.h>
+#include <fcntl.h>
 #include <getopt.h>
 
 const char* usagemsg = "Usage: cserve [-h] [-p <port number>] <root directory>";
@@ -115,11 +115,11 @@ void configure(int argc, char* argv[])
     }
 
     config.srvdirpath = argv[argindex];
-    DIR* dir = opendir(config.srvdirpath);
-    if (!dir)
+    config.srvdir = open(config.srvdirpath, O_RDONLY | O_DIRECTORY);
+    // not portable
+    if (config.srvdir == -1)
     {
         eprintf("could not open dir '%s'", config.srvdirpath);
         exit(1);
     }
-    closedir(dir);
 }
