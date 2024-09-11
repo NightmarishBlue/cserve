@@ -15,6 +15,14 @@ off_t filesize(fd file)
     return finfo.st_size;
 }
 
+bool isdir(fd file)
+{
+    struct stat dinfo;
+    if (fstat(file, &dinfo) == -1)
+        return false; // no way for the caller to tell if this is the reason for false...
+    return S_ISDIR(dinfo.st_mode);
+}
+
 fd opend(const char* path)
 {
     #ifdef O_DIRECTORY
@@ -23,7 +31,7 @@ fd opend(const char* path)
         fd dir = open(path, O_RDONLY);
         if (dir == -1) return -1;
         struct stat dinfo;
-        if (fstat(dir, &dinfo) != -1 && S_ISDIR(dinfo.st_mode)) return dir;
+        if (isdir(dir)) return dir;
         return -1;
     #endif
 }
