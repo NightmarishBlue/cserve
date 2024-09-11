@@ -143,7 +143,7 @@ off_t getfile(struct request* req, struct response* res)
     char* filepath; // if index is needed, this will be on heap
     if (index)
     {
-        filepath = msprintf("%s%s", req->identifier + 1, "index.html"); // have to skip the leading / for openat
+        filepath = msprintf("%s%s", req->identifier, "index.html"); // have to skip the leading / for openat
         if (!filepath)
         {
             fprintf(stderr, "error sprintfing the path\n");
@@ -151,9 +151,9 @@ off_t getfile(struct request* req, struct response* res)
         }
     }
     else
-        filepath = req->identifier + 1; //msprintf("%s/%s", options->srvdirpath, req->identifier);
+        filepath = req->identifier; //msprintf("%s/%s", options->srvdirpath, req->identifier);
 
-    res->file = openat(options->srvdir, filepath, O_RDONLY);
+    res->file = openunder(options->srvdir, filepath, O_RDONLY);
     // the filepath is technically unneeded here
     if (res->file == -1)
     {
@@ -180,7 +180,6 @@ off_t getfile(struct request* req, struct response* res)
     off_t size = filesize(res->file);
     if (size == -1)
         res->code = INTERNAL_SERVER_ERROR;
-    // HACK should ensure that this file is not outside the directory we are serving
     return size; // i think it would be cleaner if this returned a response struct :/
 }
 
