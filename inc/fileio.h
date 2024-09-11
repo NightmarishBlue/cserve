@@ -19,6 +19,7 @@ bool isdir(fd file);
 fd opend(const char* path);
 
 // open the given path relative to that of dir
+// prevents escaping the given directory
 // return the file descriptor, or -1 on error, in which case errno is set
 fd openunder(fd dir, const char* relpath, int flags);
 #endif
