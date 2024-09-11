@@ -35,3 +35,18 @@ fd opend(const char* path)
         return -1;
     #endif
 }
+
+#include <linux/openat2.h>
+#include <sys/syscall.h>
+#include <unistd.h>
+
+int openat2(fd dir, const char* path, const struct open_how* how, size_t size)
+{
+    return syscall(SYS_openat2, dir, path, how, size);
+}
+
+fd openunder(fd dir, const char* relpath, int flags)
+{
+    struct open_how how = { .flags = flags, .resolve = RESOLVE_IN_ROOT };
+    return openat2(dir, relpath, &how, sizeof(how));
+}

@@ -17,4 +17,8 @@ bool isdir(fd file);
 // return its file descriptor, or -1 on failure
 // will fall back to using fstat if O_DIRECTORY is unavailable
 fd opend(const char* path);
+
+// open the given path relative to that of dir
+// return the file descriptor, or -1 on error, in which case errno is set
+fd openunder(fd dir, const char* relpath, int flags);
 #endif
