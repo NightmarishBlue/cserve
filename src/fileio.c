@@ -3,6 +3,12 @@
 
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <sys/syscall.h> // to check if openat2 is supported
+
+#ifdef SYS_openat2
+    #include <linux/openat2.h>
+    #include <unistd.h>
+#endif
 
 off_t filesize(fd file)
 {
@@ -30,23 +36,23 @@ fd opend(const char* path)
     #else
         fd dir = open(path, O_RDONLY);
         if (dir == -1) return -1;
-        struct stat dinfo;
         if (isdir(dir)) return dir;
         return -1;
     #endif
 }
 
-#include <linux/openat2.h>
-#include <sys/syscall.h>
-#include <unistd.h>
-
-int openat2(fd dir, const char* path, const struct open_how* how, size_t size)
-{
-    return syscall(SYS_openat2, dir, path, how, size);
-}
+#ifdef SYS_openat2
+    int openat2(fd dir, const char* path, const struct open_how* how, size_t size)
+    {
+        return syscall(SYS_openat2, dir, path, how, size);
+    }
+#endif
 
 fd openunder(fd dir, const char* relpath, int flags)
 {
-    struct open_how how = { .flags = flags, .resolve = RESOLVE_IN_ROOT };
-    return openat2(dir, relpath, &how, sizeof(how));
+    #ifdef SYS_openat2
+        struct open_how how = { .flags = flags, .resolve = RESOLVE_IN_ROOT };
+        return openat2(dir, relpath, &how, sizeof(how));
+    #endif
+    // TODO provide an alternative approach so this compiles outside Linux >= 5.6
 }
