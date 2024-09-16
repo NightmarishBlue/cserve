@@ -188,7 +188,7 @@ bool serve(fd sock)
     res.code = parsereq(sock, &req);
 
     // TODO parse headers somewhere about here
-    // also check if the final line is empty
+    // TODO must consume until \r\n\r\n or the next request will break
     printf("%s %s HTTP/%s\n", strfrommethod(req.method), req.identifier, strfromversion(req.version));
     if (res.code != OK)
     {
