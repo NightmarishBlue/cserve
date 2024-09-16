@@ -1,5 +1,5 @@
 #include "main.h"
-#include "fileio.h"
+#include "file.h"
 #include "opts.h"
 
 #include <stdio.h>

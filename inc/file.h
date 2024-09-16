@@ -1,5 +1,5 @@
-#ifndef _FILEIO_H
-#define _FILEIO_H
+#ifndef _FILE_H
+#define _FILE_H
 #include <stdbool.h>
 
 #include <sys/types.h>

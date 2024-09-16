@@ -1,6 +1,6 @@
 #ifndef _OPTS_H
 #define _OPTS_H
-#include "fileio.h"
+#include "file.h"
 
 #include <stdbool.h>
 #include <stdio.h>

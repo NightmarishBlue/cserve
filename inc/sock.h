@@ -1,6 +1,6 @@
 #ifndef _SOCK_H
 #define _SOCK_H
-#include "fileio.h"
+#include "file.h"
 
 #include <stdint.h>
 #include <stdbool.h>
