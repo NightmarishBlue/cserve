@@ -129,7 +129,7 @@ enum code parsereq(fd sock, struct request* request)
     request->version = version;
     
     // if the next character isn't a \n, KILL
-    if (sgetc(sock, MSG_PEEK) != '\n')
+    if (sgetc(sock, 0) != '\n')
         return BAD_REQUEST;
 
     return OK;
