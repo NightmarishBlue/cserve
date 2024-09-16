@@ -15,7 +15,7 @@ int main(int argc, char* argv[])
 
     struct sockaddr_in myaddr;
     fd sockid = crtsock();
-    if (sockid == -1) return 1; // TODO report this error
+    if (sockid == -1) return 1;
     if(!(bindport(sockid, &myaddr, options->portn) && socklisten(sockid)))
     {
         closesock(sockid);

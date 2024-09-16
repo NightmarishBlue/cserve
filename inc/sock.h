@@ -11,7 +11,7 @@
 
 // these functions print diagnostic error messages
 
-// register a socket and return its fd
+// create an ipv4 endpoint as a stream and return its fd for reads and writes
 fd crtsock();
 // bind a socket to the given port, storing details in an external address struct
 bool bindport(fd sock, struct sockaddr_in* addr, uint16_t port);
