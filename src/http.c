@@ -112,12 +112,12 @@ enum code parsereq(fd sock, struct request* request)
     request->method = mthd;
 
     // if the next character isn't a /, KILL
-    if (sgetc(sock, MSG_PEEK) != '/')
+    if ((*request->identifier = sgetc(sock, 0)) != '/') // consume this so we don't have to read it again
         return BAD_REQUEST;
 
     // extract the path
-    // read up to ' ', up to limit
-    if (readuntilchar(sock, MAX_REQ_PATH, request->identifier, ' ') == 256)
+    // read up to ' ', up to limit (-1 because we took in the first char already)
+    if (readuntilchar(sock, MAX_REQ_PATH - 1, &request->identifier[1], ' ') == 256)
         return URI_TOO_LONG;
 
     // extract the version string
