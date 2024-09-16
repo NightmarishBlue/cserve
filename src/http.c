@@ -100,16 +100,14 @@ enum code parsereq(fd sock, struct request* request)
 {
     // read first few bytes - ensure they are GET /
     char mthdstr[MAX_METHOD_LEN];
-    enum method mthd; // temporarily store the method
     // reject invalid input - smallest method name is GET, 3 chars
-    if (readuntilchar(sock, MAX_METHOD_LEN, mthdstr, ' ') < 3 || (mthd = methodfromstr(mthdstr)) == -1)
+    if (readuntilchar(sock, MAX_METHOD_LEN, mthdstr, ' ') < 3 || (request->method = methodfromstr(mthdstr)) == -1)
         return BAD_REQUEST;
-    else if (mthd > GET) // we only have the first one done @u@
+    else if (request->method > GET) // we only have the first one done @u@
     {
         fprintf(stderr, "oops... we don't have '%s' @u@\n", strfrommethod(request->method));
         return NOT_IMPLEMENTED;
     }
-    request->method = mthd;
 
     // if the next character isn't a /, KILL
     if ((*request->identifier = sgetc(sock, 0)) != '/') // consume this so we don't have to read it again
