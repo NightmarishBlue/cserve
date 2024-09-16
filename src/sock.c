@@ -124,14 +124,11 @@ size_t readuntilchar(fd sock, const size_t len, char buf[len], char illegal)
     return len; // return len on bad
 }
 
-
-// HACK this function has little reason to exist
-// [ ] decide whether to provide a stdc version without dprintf, or just delete it
 int sockprintf(fd sock, const char* fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    int i = vdprintf(sock, fmt, args);
+    int i = vdprintf(sock, fmt, args); // possibly ifdef this
     va_end(args);
     return i;
 }
