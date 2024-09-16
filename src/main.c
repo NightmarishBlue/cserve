@@ -31,7 +31,7 @@ int main(int argc, char* argv[])
         char name[16];
         if (addrstr(&clientaddr, 16, name))
             printf("Received connection from %s\n", name);
-        serve(clisock);
+        while (serve(clisock));
         closepeer(clisock);
     }
 

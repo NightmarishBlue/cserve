@@ -71,5 +71,7 @@ struct response
 // or -1 on invalid
 enum version versionfromstr(const char verstr[MAX_VERSION_LEN]);
 
-void serve(fd sock);
+// read from a given socket and answer 1 HTTP request
+// return false if connection should be broken
+bool serve(fd sock);
 #endif

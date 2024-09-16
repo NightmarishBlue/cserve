@@ -183,8 +183,7 @@ off_t getfile(struct request* req, struct response* res)
     return size; // i think it would be cleaner if this returned a response struct :/
 }
 
-// TODO return a bool or something indicating whether to continue serving this connection
-void serve(fd sock)
+bool serve(fd sock)
 {
     struct request req = { .method = GET, .version = DEFAULT_HTTP_VERSION, .identifier = "" };
     struct response res;
@@ -199,7 +198,7 @@ void serve(fd sock)
         if (stat)
             fprintf(stderr, "erroneous request: %s\n", stat->desc);
         sendstatus(sock, req.version, res.code);
-        return; // TODO break the connection here
+        return false; // do we really need to break the connection here?
     }
 
     off_t fsize = getfile(&req, &res);
@@ -218,4 +217,6 @@ void serve(fd sock)
 
     if (res.file != -1)
         close(res.file);
+
+    return true;
 }
